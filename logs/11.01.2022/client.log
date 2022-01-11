@@ -1,0 +1,3 @@
+2022-01-11 14:08:48,006 - INFO - process - file:Interaction.py line:134 : la commande <discord.commands.SlashCommand name=test> lancer par !S! Erloysà provoquer l'erreur Application Command raised an exception: Exception: 
+2022-01-11 14:10:42,497 - INFO - process - file:Interaction.py line:134 : la commande <discord.commands.SlashCommand name=test> lancer par !S! Erloysà provoquer l'erreur Application Command raised an exception: Exception: 
+2022-01-11 14:12:57,388 - INFO - process - file:Interaction.py line:134 : la commande <discord.commands.SlashCommand name=test> lancer par !S! Erloysà provoquer l'erreur Application Command raised an exception: Exception: 
