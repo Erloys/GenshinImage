@@ -2,6 +2,10 @@ import logging
 import sys
 import asyncio
 import traceback
+from discord.commands.commands import slash_command
+from discord.commands.context import ApplicationContext
+
+from discord.commands.errors import CheckFailure
 
 from discord.errors import Forbidden
 
@@ -9,7 +13,7 @@ sys.path.append('/data/projets/genshinImage/bot/src/')
 import discord
 from discord.ext import commands
 
-import Interaction
+import BotInteraction
 import constants
 
 
@@ -18,27 +22,28 @@ class Error(commands.Cog):
 		self.client = client
 		self.logger = logger
 	
-	@commands.slash_command(name='test')
-	async def test(self, ctx):
-		await ctx.respond('fait')
-		raise Exception
 
 	@commands.Cog.listener()
-	async def on_application_command_error(self, ctx: commands.Context, error):
-		print(f"la commands {ctx.command.name} à provoquer l'erreur {error}")
-
-		fb = Interaction.Error(ctx, error, self.logger)
+	async def on_application_command_error(self, ctx: ApplicationContext, error):
+		error = getattr(error, 'original', error)
+		
+		fb = BotInteraction.Error(ctx, error, self.logger)
 
 		# commande annuler
 
 		if isinstance(error, constants.CancelError):
 			message = str(error)
-			fb = Interaction.Cancel()
+			fb = BotInteraction.Cancel()
 		
+		elif isinstance(error, CheckFailure):
+			message = "vous n'avez pas la permission d'utiliser cette commande"
+			fb = BotInteraction.Cancel()
+
 		elif isinstance(error, asyncio.TimeoutError):
 			message = "⏱ TEMPS ÉCOULER"
-			fb = Interaction.Cancel()
+			fb = BotInteraction.Cancel()
 
+		# ERREUR
 		elif isinstance(error, AttributeError):
 			message = "il semblerai que cette commande rencontre des bugs dans \
 			cette version"
@@ -55,4 +60,4 @@ class Error(commands.Cog):
                 type(error), error, error.__traceback__, file=sys.stderr
             )
 
-		await fb.process(ctx.send, message)
+		await fb.process(ctx.respond, message)

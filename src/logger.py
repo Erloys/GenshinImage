@@ -7,7 +7,7 @@ sys.path.append('/data/projets/genshinImage/bot/src/')
 
 import coloredlogs
 
-import constants 
+import constants
 
 
 def Make():

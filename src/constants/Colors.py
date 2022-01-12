@@ -1,4 +1,4 @@
-class colors:
+class Colors:
     default = 0
     teal = 0x1ABC9C
     dark_teal = 0x11806A
@@ -22,13 +22,3 @@ class colors:
     darker_grey = 0x546E7A
     blurple = 0x7289DA
     greyple = 0x99AAB5
-
-
-LOGCHAN = 930342267917594651
-
-
-TIMER = 7
-DIR_PATH = "/data/projets/genshinImage/bot/"
-
-class CancelError(Exception):
-    pass
