@@ -25,3 +25,6 @@ class roles:
     DECO_CHANNEL = ROLE_ID['decorator_channel']
     VISITOR = ROLE_ID['visitor']
     VALID = ROLE_ID['valid']
+
+
+STAFF_ROLES = [roles.MODERATOR, roles.ADMIN, roles.OWNER]

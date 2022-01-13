@@ -8,6 +8,9 @@ LOGCHAN = 930342267917594651
 ARCHIVE = 930342267917594652
 """id du channel d'archive d'image"""
 
+CONFIRM_CHAN = 930342267917594647
+"""id du channel de validation doublon"""
+
 
 class MetaEnum(type):
     def __contains__(cls, x):
@@ -19,7 +22,7 @@ class MetaEnum(type):
                 yield value
 
 
-class CH_TYPE(metaclass=MetaEnum):
+class CHANNEL_TYPE(metaclass=MetaEnum):
     SAFE = "✅"
     HOT = "🔥"
     NSFW = "🔞"

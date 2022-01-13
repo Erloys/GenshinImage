@@ -43,13 +43,14 @@ def isStaff(user, guild):
 
 
 def getStaffRole(user, guild):
-    find = (r for r in user.roles if r.id in [constants.roles.BOT, constants.roles.ADMIN, constants.roles.MODERATOR])
+    if isOwner(user, guild):
+        return guild.get_role(constants.roles.OWNER)
 
-    found = next(find)
-
-    if not found and isOwner(user):
-        found = guild.get_role(constants.roles.OWNER)
-    
+    roles = [None, constants.roles.MODERATOR, constants.roles.ADMIN, constants.roles.BOT, constants.roles.OWNER]
+    found = None
+    for i in user.roles:
+        if i.id in roles and roles.index(i.id) > roles.index(found):
+            found = i
     return found
 
 
@@ -65,7 +66,7 @@ def isUrl(text):
 
 
 def isImgChan(name):
-    return any(True for i in constants.CH_TYPE if i in name)
+    return any(True for i in constants.channelsType if i in name)
 
 
 

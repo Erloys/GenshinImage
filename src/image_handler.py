@@ -14,15 +14,25 @@ import constants
 Index = namedtuple('Index', "hash tag id")
 
 
+def id_to_path(id:str) -> str:return id.split('/')[-1]
+
 def get_hash(filelike):
     return imagehash.average_hash(Image.open(filelike), hash_size=10)
+
+def check_hash(
+    data: list[Index], hash: imagehash.ImageHash
+) -> list[Index]:
+    """renvois la liste d'index possédant des hash similaire au hash donnée
+    si aucun similaire renvois une liste vide"""
+    return [i for i in data if i.hash - hash < constants.MARGE_DIFFERENCE]
+
 
 
 class ImgHandler:
     
     def __init__(self, db_name, logger: logging.Logger) -> None:
 
-        self.con = sqlite3.connect(f"{constants.DIR_PATH}/{db_name}")
+        self.con = sqlite3.connect(db_name)
         self.con.row_factory = sqlite3.Row
         self.logger = logger
 

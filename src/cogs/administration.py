@@ -4,6 +4,7 @@ import discord
 from discord import utils
 from discord.commands.context import ApplicationContext
 from discord.ext import commands
+from discord.commands import permissions
 
 import constants
 import utils
@@ -19,10 +20,13 @@ class Administration(commands.Cog):
         self.logger = logger
     
     @commands.slash_command(name='owner', guild_ids=[constants.SERVEUR_ID])
-    @commands.check(check)
+    @permissions.is_owner()
+    @permissions.is_user(constants.OWNER_ID)
     async def owner(self, ctx: ApplicationContext):
         """bascule entre le mode normal et le mode Owner"""
         role = ctx.guild.get_role(constants.roles.OWNER)
+
+        
         if role in ctx.author.roles:
             text = 'owner mode activate'
             await ctx.author.remove_roles(role)

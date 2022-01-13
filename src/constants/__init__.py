@@ -2,8 +2,10 @@
 
 from .Colors import Colors
 
-from .Role import roles
+from .Role import roles, STAFF_ROLES
 
-from .channels import CH_TYPE, CH_TO_ROLE, LOGCHAN, ARCHIVE
+from . import channels
 
-from.settings import SERVEUR_ID, OWNER_ID, TIMER, ASK_TIMER, DIR_PATH, CancelError
+channelsType = channels.CHANNEL_TYPE
+
+from.settings import SERVEUR_ID, OWNER_ID, TIMER, ASK_TIMER, DIR_PATH, IMGPATH, CancelError, MARGE_DIFFERENCE

@@ -2,6 +2,7 @@ from collections import namedtuple
 from typing import Optional
 
 import discord
+from discord.embeds import EmptyEmbed
 import discord.interactions
 from discord.commands.commands import command
 
@@ -59,7 +60,7 @@ ROLE_UPDATE = modType(
 class Message:
     """sert de super classe"""
 
-    chan = constants.LOGCHAN
+    chan = constants.channels.LOGCHAN
 
     def __init__(self, type) -> None:
         self.type = type
@@ -86,8 +87,8 @@ class Message:
     def set_img(self, img):
         self.embed.set_image(url=img)
     
-    def set_footer(self, text, img=None):
-        self.embed.set_footer(text, icon_url=img)
+    def set_footer(self, text, img=EmptyEmbed):
+        self.embed.set_footer(text=text, icon_url=img)
 
     def set_author(self, name, img):
         self.author = name
@@ -163,9 +164,12 @@ class Moderation(Message):
         return discord.Embed(title=self.type.title, color=self.type.color)
     
 
-    async def process(self, target: discord.User, reason: str, delete_after=constants.TIMER, **kwargs):
+    async def process(self, target: discord.User, reason: str, delete_after=constants.TIMER, send=None, **kwargs):
+        if send is None:
+            send = self.ctx.send
+
         message = self.type.action + target.display_name
-        avatar_url = target.avatar.url if target.avatar else IMGURL.NotFound
+        avatar_url = target.display_avatar.url if target.display_avatar else IMGURL.NotFound
         reason = 'raison : ' + reason
 
         self.logger.info(f"{self.type.title}: {self.author} - {message} - {reason}")
@@ -201,61 +205,30 @@ class AskSelect(Message):
         return await send(embed=self.embed, view=self.view, delete_after=delete_after, **kwargs)
 
 
+def make_confirm_btn(ctx, btn1='confirmer', btn2='annuler', timeout=constants.ASK_TIMER):
+    class DefaultButtonView(discord.ui.View):
+        def __init__(self, *items, timeout: Optional[float] = 180):
+            super().__init__(*items, timeout=timeout)
 
-class DefaultButtonView(discord.ui.View):
-    def __init__(self, ctx, *items, timeout: Optional[float] = 180):
-        super().__init__(*items, timeout=timeout)
+        @discord.ui.button(label=btn1, style=discord.ButtonStyle.green)
+        async def first_callback(self, button, interaction: discord.Interaction):
+            await interaction.response.edit_message(view=None)
+            self.value = 1
+            self.stop()
+        
+        @discord.ui.button(label=btn2, style=discord.ButtonStyle.red)
+        async def second_callback(self, button, interaction: discord.Interaction):
+            await interaction.response.edit_message(view=None)
+            self.value = 0
+            self.stop()
 
-        self.ctx = ctx
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            if interaction.user != ctx.author:
+                await interaction.response.send_message("vous ne pouvez pas utiliser ce bouton", ephemeral=True)
+                return False
+            return True
+        
+        async def on_timeout(self) -> None:
+            self.value = 2
     
-
-    @discord.ui.button(label="confirmer", style=discord.ButtonStyle.green)
-    async def first_callback(self, button, interaction: discord.Interaction):
-        await interaction.response.edit_message(view=None)
-        self.value = 1
-        self.stop()
-    
-    @discord.ui.button(label="annuler", style=discord.ButtonStyle.red)
-    async def second_callback(self, button, interaction: discord.Interaction):
-        await interaction.response.edit_message(view=None)
-        self.value = 0
-        self.stop()
-
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.ctx.author:
-            await interaction.response.send_message("vous ne pouvez pas utiliser ce bouton", ephemeral=True)
-            return False
-        return True
-    
-    async def on_timeout(self) -> None:
-        await self.ctx.send('temps écoulez')
-
-
-class DefaultButtonStaff(discord.ui.View):
-    def __init__(self, ctx, *items, timeout: Optional[float] = 180):
-        super().__init__(*items, timeout=timeout)
-
-        self.ctx = ctx
-    
-    @discord.ui.button(label="confirmer", style=discord.ButtonStyle.green)
-    async def first_callback(self, button, interaction: discord.Interaction):
-        await interaction.response.edit_message(view=None)
-        self.value = 1
-        self.stop()
-    
-    @discord.ui.button(label="annuler", style=discord.ButtonStyle.red)
-    async def first_callback(self, button, interaction: discord.Interaction):
-        await interaction.response.edit_message(view=None)
-        self.value = 0
-        self.stop()
-
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not utils.isStaff(interaction.user, interaction.guild):
-            await interaction.response.send_message("vous ne pouvez pas utiliser ce bouton", ephemeral=True)
-            return False
-        return True
-    
-    async def on_timeout(self) -> None:
-        await self.ctx.send('temps écoulez')
+    return DefaultButtonView(timeout=timeout)

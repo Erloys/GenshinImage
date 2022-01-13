@@ -6,6 +6,9 @@ SERVEUR_ID = 930342267091320853
 TIMER = 7
 ASK_TIMER = 10
 DIR_PATH = "/data/projets/genshinImage/bot/"
+IMGPATH = "/data/projets/discord/database/img/"
+
+MARGE_DIFFERENCE = 15
 
 class CancelError(Exception):
     """ À lever pour annuler une commande le text passé en argument sera envoyer dans le message d'annulation"""
