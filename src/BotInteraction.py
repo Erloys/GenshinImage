@@ -1,5 +1,6 @@
+from __future__ import annotations
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 from discord.embeds import EmptyEmbed
@@ -66,6 +67,14 @@ class Message:
         self.type = type
 
         self.embed = self.makeEmbed()
+
+    
+    @property
+    def fields(self): return self.embed.fields
+
+    @fields.setter
+    def fields(self, a):
+        self.embed.fields = a
     
     def makeEmbed(self):
         embed = discord.Embed(
@@ -75,14 +84,6 @@ class Message:
         embed.set_thumbnail(url=self.type.img)
 
         return embed
-    
-    @property
-    def fields(self):
-        return self.embed.fields
-    
-    @fields.setter
-    def field(self, a):
-        self.embed.fields = a
     
     def set_img(self, img):
         self.embed.set_image(url=img)
@@ -100,9 +101,9 @@ class Message:
     def add_field(self, name: str, value: str, inline: bool):
         self.embed.add_field(name=name, value=value, inline=inline)
 
-    def clone_fields(self, a):
-        self.fields = a.fields
-    
+    def add_fields_from_embed(self, a: Union[discord.Embed, Message]):
+        for field in a.fields:
+            self.add_field(field.name, field.value, field.inline)
 
     async def process(self,send, message:str, delete_after=constants.TIMER, **kwargs):
         
@@ -116,7 +117,7 @@ class Rapport(Message):
     def __init__(self, guild) -> None:
         super().__init__(TYPE.RAPPORT)
 
-        self.chan = guild.get_channel(self.chan)
+        self.chan: discord.TextChannel = guild.get_channel(self.chan)
     
 
     async def process(self, send, message: str, delete_after=constants.TIMER, logger= None, logchan= None, **kwargs):
@@ -181,7 +182,7 @@ class Moderation(Message):
         return await self.ctx.send(embed=self.embed, delete_after=delete_after, **kwargs)
 
 
-class AskButton(Message):
+class AskMessageBtn(Message):
     def __init__(self, view) -> None:
         super().__init__(TYPE.CONFIRM)
         self.view = view
@@ -193,7 +194,7 @@ class AskButton(Message):
         return await send(embed=self.embed, view=self.view, delete_after=delete_after, **kwargs)
 
 
-class AskSelect(Message):
+class AskMessageSelect(Message):
     def __init__(self, view) -> None:
         super().__init__(TYPE.SELECT)
     

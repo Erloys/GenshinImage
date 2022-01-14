@@ -100,7 +100,7 @@ class Moderation(commands.Cog):
 
 
         choices = rolechoice(timeout=constants.ASK_TIMER)
-        fb = BotInteraction.AskSelect(choices)
+        fb = BotInteraction.AskMessageSelect(choices)
         ask_select = await fb.process(ctx.respond, f"manage role opened by {ctx.author.display_name}")
         await choices.wait()
         if not choices.value:
@@ -117,7 +117,8 @@ class Moderation(commands.Cog):
 
 
     @commands.slash_command(name='unban', guild_ids=[constants.SERVEUR_ID])
-    @commands.has_any_role(constants.roles.MODERATOR, constants.roles.ADMIN)
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
     async def unban(self, ctx : ApplicationContext):
         
         choices = await utils.create_unban_choice(self.client)
@@ -153,7 +154,7 @@ class Moderation(commands.Cog):
                 
         
         v =unbanchoice(timeout=constants.ASK_TIMER)
-        ask_select = BotInteraction.AskSelect(view=v)
+        ask_select = BotInteraction.AskMessageSelect(view=v)
 
         ask_message = await ask_select.process(ctx.send_response, "choisissez l'utilisateur à unban", delete_after=None)
         
@@ -165,7 +166,7 @@ class Moderation(commands.Cog):
         user = await self.client.fetch_user(int(v.value))
 
         b = BotInteraction.make_confirm_btn(ctx)
-        ask_confirm = BotInteraction.AskButton(view=b)
+        ask_confirm = BotInteraction.AskMessageBtn(view=b)
 
         await ask_confirm.process(ask_message.edit_original_message, f"confirmer la révocation du ban de {user.display_name}", delete_after=None)
         await b.wait()
@@ -179,6 +180,8 @@ class Moderation(commands.Cog):
         await fb.process(user, reason="undefined")
     
     @commands.slash_command(guild_ids=[constants.SERVEUR_ID])
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
     async def ban(self, ctx: ApplicationContext,
     user: Option(discord.Member, description="cible de la commande", required=True),
     reason: Option(str, description='raison du bannissement', required=False) = "undefined"):
@@ -188,7 +191,7 @@ class Moderation(commands.Cog):
         permission.check_permission(ctx.author, user, ctx.guild)
 
         v = BotInteraction.make_confirm_btn(ctx)
-        fb = BotInteraction.AskButton(v)
+        fb = BotInteraction.AskMessageBtn(v)
         await fb.process(ctx.send_response, f"confirmer le bannissement de {user.display_name} pour : {reason}")
 
         await v.wait()
@@ -205,6 +208,8 @@ class Moderation(commands.Cog):
             await fb.process(user, reason)
     
     @commands.slash_command(guild_ids=[constants.SERVEUR_ID])
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
     async def kick(self, ctx: ApplicationContext,
     user: Option(discord.Member, description="cible de la commande", required=True),
     reason: Option(str, description="raison de l'expulsion", required=False) = "undefined"):
@@ -214,7 +219,7 @@ class Moderation(commands.Cog):
         permission.check_permission(ctx.author, user, ctx.guild)
 
         v = BotInteraction.make_confirm_btn(ctx)
-        fb = BotInteraction.AskButton(v)
+        fb = BotInteraction.AskMessageBtn(v)
         await fb.process(ctx.send_response, f"confirmer l'expulsion de {user.display_name} pour : {reason}")
 
         await v.wait()
@@ -232,6 +237,8 @@ class Moderation(commands.Cog):
 
     
     @commands.message_command(guild_ids=[constants.SERVEUR_ID])
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
     async def manage_doublon(self, ctx: ApplicationContext, message: discord.Message):
         if message.author != self.client.user:
             raise constants.CancelError('seul les message en attente de validation peuvent être cibler par cette commande')
@@ -243,7 +250,7 @@ class Moderation(commands.Cog):
             raise constants.CancelError('seul les message en attente de validation peuvent être cibler par cette commande')
         
         v = BotInteraction.make_confirm_btn(ctx, btn1='✅ Valider', btn2='❌ Rejeter')
-        fb = BotInteraction.AskButton(v)
+        fb = BotInteraction.AskMessageBtn(v)
         interaction = await fb.process(ctx.send_response, "que faire de l'image ?", delete_after=None)
 
         await v.wait()
@@ -277,3 +284,109 @@ class Moderation(commands.Cog):
         embed.description = f"doublon traité par {ctx.author.display_name}"
         await message.delete()
         await message.channel.send(embed=embed)
+
+    
+    @commands.slash_command(guild_ids=[constants.SERVEUR_ID])
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
+    async def addchan(self, ctx: ApplicationContext,
+            genre: Option(str, description="sexe du personnage", choices=['♂️ Homme', '♀️ Femme']),
+            name: Option(str, description="nom du personnage")):
+        """ajoute une catégorie de personnage"""
+
+        catname = "~ " + name if genre == '♀️ Femme' else '> ' + name
+
+        channels = [
+            "┌・" + name + "・" + constants.channelsType.SAFE,
+            "┇・" + name + "・" + constants.channelsType.HOT,
+        ]
+        if genre == '♀️ Femme':
+            channels.append("└・" + name + "・" + constants.channelsType.NSFW)
+        
+        exists = []
+        for name in channels:
+            for chan in ctx.guild.channels:
+                if chan.name == name:
+                    channels.remove(name)
+                    exists.append(name)
+                    break
+        if not channels:
+            raise constants.CancelError(
+                f"les cannaux suivants : {' '.join(exists)}\n existe déjà"
+            )
+
+        v = BotInteraction.make_confirm_btn(ctx)
+        ask = BotInteraction.AskMessageBtn(v)
+
+        for c in channels:
+            ask.add_field(c, '_', False)
+        
+        ask_message = await ask.process(ctx.send_response, "confirmer l'ajout des cannaux", delete_after=None)
+
+        await v.wait()
+        await ask_message.delete_original_message()
+
+        if v.value == 2:
+            raise constants.CancelError("temps écouler")
+        
+        elif not v.value:
+            raise constants.CancelError
+        
+        else:
+            cat = discord.utils.get(ctx.guild.categories, name=catname)
+            if not cat:
+                cat: discord.CategoryChannel = await ctx.guild.create_category(catname)
+            
+            everyone = ctx.guild.get_role(constants.roles.EVERYONE)
+            allow_roles = [ctx.guild.get_role(constants.roles.VALID),
+            ctx.guild.get_role(constants.roles.MODERATOR),
+            ctx.guild.get_role(constants.roles.ADMIN),
+            ctx.guild.get_role(constants.roles.BOT) ]
+
+            
+            await cat.set_permissions(everyone, view_channel=False, send_messages=False)
+            for r in allow_roles:
+                await cat.set_permissions(r, send_messages=True, attach_files=True, add_reactions=True)
+            
+            access_roles = [constants.roles.SAFE, constants.roles.HOT, constants.roles.NSFW]
+            for i, c in enumerate(channels):
+                chan = await ctx.guild.create_text_channel(c, category=cat, position=i)
+                role = ctx.guild.get_role(access_roles[i])
+                await chan.set_permissions(role, view_channel=True)
+            
+            fb = BotInteraction.Rapport(ctx.guild)
+
+            fb.set_author(ctx.author.display_name, ctx.author.display_avatar.url)
+            fb.add_fields_from_embed(ask)
+            await fb.process(ctx.send_followup, "À ajouter les cannaux suivant: ", logchan=fb.chan)
+    
+    @commands.message_command(guild_ids=[constants.SERVEUR_ID])
+    @permissions.has_any_role(*constants.STAFF_ROLES)
+    @permissions.is_user(constants.OWNER_ID)
+    async def delete(self, ctx: ApplicationContext, message: discord.Message):
+        if not utils.isImgChan(message.channel.name):
+            raise constants.CancelError(f"{ctx.author.mention} commande réserver au channel image")
+        
+        elif not message.attachments:
+            raise constants.CancelError(f"{ctx.author.mention} Oups il n'y'a pas d'image dans ce message")
+        
+        archive = ctx.guild.get_channel(constants.channels.ARCHIVE)
+        img = BytesIO()
+        await message.attachments[0].save(img)
+
+        image = await archive.send(file=discord.File(img, filename="backup.png"))
+        await utils.delete(self.client, message)
+
+        self.database.delete_image(image_handler.id_to_path(message.jump_url))
+        self.database.delete_index(message.jump_url)
+
+        fb = BotInteraction.Rapport(ctx.guild)
+        fb.set_author(ctx.author.display_name, ctx.author.display_avatar.url)
+        fb.set_img(image.attachments[0].url)
+        fb.set_url(image.jump_url)
+        await fb.process(ctx.send_response, f"À supprimer cette image dans {message.channel.name}", logchan=fb.chan)
+
+
+
+
+        

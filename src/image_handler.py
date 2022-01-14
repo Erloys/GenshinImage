@@ -14,7 +14,7 @@ import constants
 Index = namedtuple('Index', "hash tag id")
 
 
-def id_to_path(id:str) -> str:return id.split('/')[-1]
+def id_to_path(id:str) -> str:return constants.IMGPATH + id.split('/')[-1]
 
 def get_hash(filelike):
     return imagehash.average_hash(Image.open(filelike), hash_size=10)
@@ -66,7 +66,7 @@ class ImgHandler:
         with self.connect() as f:
             f.execute(query, value)
 
-            self.logger.info(f"ajout de l'index {id} dans la database")
+            self.logger.info(f"ajout de l'index {index.id} dans la database")
             self.con.commit()
         
 
@@ -90,7 +90,7 @@ class ImgHandler:
             f.execute(query, value)
             self.con.commit()
     
-    def delete_index(self, id: Index.id):
+    def delete_index(self, id: str):
         """supprime un index par son id
 
         PARAMETER
@@ -105,6 +105,7 @@ class ImgHandler:
             value = (id,)
             f.execute(query, value)
             self.con.commit()
+            self.logger.info(f"suppession de l'index {id}")
 
     def get_index(self) -> list[Index]:
         """Renvois la liste des index
@@ -154,8 +155,8 @@ class ImgHandler:
 
         self.add_index(index)
 
-        os.makedirs(os.path.dirname(constants.IMGPATH + path), exist_ok=True)
-        with open(constants.IMGPATH + path, "wb") as f:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as f:
             f.write(imgbyte)
         self.logger.info(f"l'image {index.tag} à était ajouter à la base de donnée")
 

@@ -66,13 +66,13 @@ class Event(commands.Cog):
         deleted_by = log.user.display_name if isLogged else message.author.display_name
 
         img = BytesIO()
-
-        #delete database
-
+        path = image_handler.id_to_path(message.jump_url)
+        self.database.delete_image(path)
+        self.database.delete_index(message.jump_url)
         await message.attachments[0].save(img)
         archive_chan = message.guild.get_channel(constants.channels.ARCHIVE)
 
-        image = await archive_chan.send(file=discord.File(img, filename='backup.png'))
+        image = await archive_chan.send(file=discord.File(img, filename=f'{message.jump_url}.png'))
 
         text = f"message supprimer par {deleted_by} dans {message.channel.name}"
 
@@ -80,7 +80,6 @@ class Event(commands.Cog):
         fb.set_author(message.author.display_name, message.author.avatar.url)
         fb.set_img(image.attachments[0].url)
         fb.set_url(image.jump_url)
-
         await fb.process(fb.chan.send, text, delete_after=None)
 
     
@@ -97,7 +96,7 @@ class Event(commands.Cog):
         elif not_img:
             if utils.isUrl(message.content):
                 await replace_url(message)
-            await utils.delete(self.client, message)
+                await utils.delete(self.client, message)
         
         elif len(message.attachments) > 1:
             for file in message.attachments:
@@ -126,7 +125,7 @@ class Event(commands.Cog):
                     files = []
                     for id in [i.id for i in found]:
                         file = BytesIO(self.database.get_image(image_handler.id_to_path(id)))
-                        files.append(discord.File(file, 'image.png'))
+                        files.append(discord.File(file, f'{id}.png'))
 
                     fb = BotInteraction.Rapport(message.guild)
                     fb.set_author(message.author.display_name, message.author.display_avatar.url)
