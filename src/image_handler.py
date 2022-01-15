@@ -20,11 +20,19 @@ def get_hash(filelike):
     return imagehash.average_hash(Image.open(filelike), hash_size=10)
 
 def check_hash(
-    data: list[Index], hash: imagehash.ImageHash
+    data: list[Index], hash: imagehash.ImageHash, id
 ) -> list[Index]:
     """renvois la liste d'index possédant des hash similaire au hash donnée
-    si aucun similaire renvois une liste vide"""
-    return [i for i in data if i.hash - hash < constants.MARGE_DIFFERENCE]
+    si aucun similaire renvois une liste vide
+    si id déjà dans db return None"""
+    found = []
+    for i in data:
+        if i.id == id:
+            return None
+        if i.hash - hash < constants.MARGE_DIFFERENCE:
+            found.append(i)
+
+    return found
 
 
 
@@ -176,7 +184,7 @@ class ImgHandler:
         """Renvois l'image associer à l'id
         si image pas trouver supprime l'index associer à l'id et retourne une
         image d'erreur à la place"""
-        filename = constants.IMGPATH + path
+        filename = path
         try:
             with open(filename, "rb") as f:
                 return f.read()

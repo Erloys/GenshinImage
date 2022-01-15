@@ -118,9 +118,12 @@ class Event(commands.Cog):
                 img.seek(0)
 
                 result = self.database.get_index()
-                found = image_handler.check_hash(result, hash)
+                found = image_handler.check_hash(result, hash, message.jump_url)
 
-                if found:
+                if found is None:
+                    return
+
+                elif found:
                     confirm_chan = message.guild.get_channel(constants.channels.CONFIRM_CHAN)
                     files = []
                     for id in [i.id for i in found]:

@@ -63,7 +63,7 @@ Ce projet utilise:
 
 ## :memo: License ##
 
-This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
+This project is under license from MIT. For more details, see the [LICENSE](LICENSE) file.
 
 
 Made by <a href="https://github.com/Erloys" target="_blank">Erloys</a>

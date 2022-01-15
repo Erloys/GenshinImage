@@ -3,6 +3,7 @@ import os
 import discord
 from dotenv import load_dotenv
 
+from src.constants.settings import DIR_PATH
 import src.logger
 import src.cogs as cogs
 import src.image_handler
@@ -15,7 +16,7 @@ client = discord.Bot(intents=intents)
 client.last_message_delete = []
 logger = src.logger.Make()
 
-database = src.image_handler.ImgHandler('/data/projets/discord/database/GenshinImage', logger)
+database = src.image_handler.ImgHandler(DIR_PATH + 'database/GenshinImage', logger)
 
 client.add_cog(cogs.Misc(client, logger, database))
 client.add_cog(cogs.Admin(client, logger))

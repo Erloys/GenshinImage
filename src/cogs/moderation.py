@@ -237,8 +237,7 @@ class Moderation(commands.Cog):
 
     
     @commands.message_command(guild_ids=[constants.SERVEUR_ID])
-    @permissions.has_any_role(*constants.STAFF_ROLES)
-    @permissions.is_user(constants.OWNER_ID)
+    @commands.has_any_role(*constants.STAFF_ROLES)
     async def manage_doublon(self, ctx: ApplicationContext, message: discord.Message):
         if message.author != self.client.user:
             raise constants.CancelError('seul les message en attente de validation peuvent être cibler par cette commande')
@@ -278,12 +277,12 @@ class Moderation(commands.Cog):
             index = image_handler.Index(str(hash), msg.channel.name, msg.jump_url)
             self.database.add_image(index, img.read(), path)
 
-
+        log_confirm = ctx.guild.get_channel(constants.channels.LOG_CONFIRM)
         embed = message.embeds[0]
         embed.set_footer(text=text)
         embed.description = f"doublon traité par {ctx.author.display_name}"
-        await message.delete()
-        await message.channel.send(embed=embed)
+        await utils.delete(self.client, message)
+        await log_confirm.send(embed=embed)
 
     
     @commands.slash_command(guild_ids=[constants.SERVEUR_ID])

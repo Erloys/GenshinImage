@@ -3,13 +3,15 @@
 from discord import role
 from .Role import roles
 
-LOGCHAN = 930342267917594651
+LOGCHAN = 922492857007341568
 """ID du channel de log"""
-ARCHIVE = 930342267917594652
+ARCHIVE = 800042738623840278
 """id du channel d'archive d'image"""
 
-CONFIRM_CHAN = 930342267917594647
+CONFIRM_CHAN = 919487889719570432
 """id du channel de validation doublon"""
+
+LOG_CONFIRM = 918358853463183430
 
 
 class MetaEnum(type):

@@ -1,12 +1,12 @@
 """constants pour TOKEN et divers parametres (timer, owner_id, serveur_id)"""
 
 OWNER_ID = 186537861321850880
-SERVEUR_ID = 930342267091320853
+SERVEUR_ID = 305675798088777741
 
 TIMER = 7
 ASK_TIMER = 10
 DIR_PATH = "/data/projets/genshinImage/bot/"
-IMGPATH = "/data/projets/discord/database/img/"
+IMGPATH = DIR_PATH + "database/img/"
 
 MARGE_DIFFERENCE = 15
 

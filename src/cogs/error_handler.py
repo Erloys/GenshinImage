@@ -34,14 +34,6 @@ class Error(commands.Cog):
 		if isinstance(error, constants.CancelError):
 			message = str(error)
 			fb = BotInteraction.Cancel()
-		
-		elif isinstance(error, CheckFailure):
-			message = "vous n'avez pas la permission d'utiliser cette commande"
-			fb = BotInteraction.Cancel()
-
-		elif isinstance(error, asyncio.TimeoutError):
-			message = "⏱ TEMPS ÉCOULER"
-			fb = BotInteraction.Cancel()
 
 		# ERREUR
 		elif isinstance(error, AttributeError):
